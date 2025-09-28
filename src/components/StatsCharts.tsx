@@ -1,7 +1,7 @@
 'use client';
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { CrashStats } from '../app/api/stats/route';
+import { CrashStats } from '../types/crashes';
 
 interface StatsChartsProps {
   stats: CrashStats;

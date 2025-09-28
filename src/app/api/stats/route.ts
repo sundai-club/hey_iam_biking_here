@@ -1,23 +1,5 @@
 import { NextResponse } from 'next/server';
-import { BicycleCrash } from '../crashes/route';
-
-export interface CrashStats {
-  yearly: { [year: string]: number };
-  monthly: { [month: string]: number };
-  daily: { [day: string]: number };
-  hourly: { [hour: string]: number };
-  seasonal: { [season: string]: number };
-  weekend: { weekday: number; weekend: number };
-  summary: {
-    total: number;
-    peakYear: string;
-    peakMonth: string;
-    peakDay: string;
-    peakHour: string;
-    peakSeason: string;
-    weekendPercentage: number;
-  };
-}
+import { BicycleCrash, CrashStats } from '../../../types/crashes';
 
 async function getCrashData(): Promise<BicycleCrash[]> {
   const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/crashes`);

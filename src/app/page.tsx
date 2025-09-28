@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { BicycleCrash } from './api/crashes/route';
-import { CrashStats } from './api/stats/route';
+import { BicycleCrash, CrashStats } from '../types/crashes';
 import StatsCharts from '../components/StatsCharts';
 
 // Dynamically import the map component to avoid SSR issues
@@ -21,7 +20,6 @@ export default function Home() {
   const [stats, setStats] = useState<CrashStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showHeatmap, setShowHeatmap] = useState(false);
   const [yearFilter, setYearFilter] = useState<number | undefined>(undefined);
 
   useEffect(() => {
@@ -111,16 +109,6 @@ export default function Home() {
                   ))}
                 </select>
               </div>
-              <button
-                onClick={() => setShowHeatmap(!showHeatmap)}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  showHeatmap
-                    ? 'bg-red-600 text-white hover:bg-red-700'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                {showHeatmap ? 'Show Markers' : 'Show Heatmap'}
-              </button>
             </div>
           </div>
         </div>
@@ -135,30 +123,72 @@ export default function Home() {
               Interactive Crash Map
             </h2>
             <p className="text-gray-600 mb-6">
-              Explore bicycle crashes across Cambridge. Click on markers for detailed information.
-              {showHeatmap && ' Heatmap shows crash density across the city.'}
+              Explore bicycle crashes across Cambridge with both heatmap density visualization and individual crash markers. 
+              Markers are color-coded by injury severity (red=fatal, orange=major, yellow=minor, green=no injury). 
+              Use the layer controls in the top-right corner to toggle between heatmap and individual crashes. 
+              Click on markers for detailed information.
             </p>
             <CrashMap 
               crashes={crashes} 
-              showHeatmap={showHeatmap}
               yearFilter={yearFilter}
             />
-            <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-600">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-red-600 rounded-full"></div>
-                <span>2023+ crashes</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                <span>2021-2022 crashes</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                <span>2019-2020 crashes</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-green-600 rounded-full"></div>
-                <span>Pre-2019 crashes</span>
+            <div className="mt-4 space-y-4">
+              {/* Heatmap Legend */}
+              {/* <div className="bg-gray-50 p-4 rounded-lg">
+                <h4 className="text-sm font-semibold text-gray-700 mb-2">Heatmap Legend</h4>
+                <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-blue-600 rounded"></div>
+                    <span>Low density</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-cyan-500 rounded"></div>
+                    <span>Medium-low</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-lime-500 rounded"></div>
+                    <span>Medium</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-yellow-500 rounded"></div>
+                    <span>High</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-orange-500 rounded"></div>
+                    <span>Very high</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-red-600 rounded"></div>
+                    <span>Extreme density</span>
+                  </div>
+                </div>
+              </div> */}
+              
+              {/* Individual Markers Legend */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h4 className="text-sm font-semibold text-gray-700 mb-2">Crash Markers</h4>
+                <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-red-600 rounded-full"></div>
+                    <span>Fatal/Death</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                    <span>Major/Incapacitating Injury</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                    <span>Minor/Suspected Injury</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-green-600 rounded-full"></div>
+                    <span>No Apparent Injury</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+                    <span>Unknown/Other</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

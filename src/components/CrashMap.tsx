@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Popup, LayersControl } from 'react-leaflet';
 import { LatLngTuple } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { BicycleCrash } from '../app/api/crashes/route';
+import { BicycleCrash } from '../types/crashes';
+import HeatmapLayer from './HeatmapLayer';
 
 // Fix for default markers in react-leaflet
 import L from 'leaflet';
@@ -19,41 +20,6 @@ interface CrashMapProps {
   crashes: BicycleCrash[];
   showHeatmap?: boolean;
   yearFilter?: number;
-}
-
-function HeatmapLayer({ crashes }: { crashes: BicycleCrash[] }) {
-  const map = useMap();
-  
-  useEffect(() => {
-    if (crashes.length === 0) return;
-
-    // Create heatmap data
-    const heatmapData = crashes.map(crash => [crash.Latitude, crash.Longitude, 1]);
-    
-    // Simple heatmap implementation using circle markers with opacity
-    const heatmapLayer = L.layerGroup();
-    
-    crashes.forEach(crash => {
-      const intensity = 0.3; // Base intensity
-      const circle = L.circleMarker([crash.Latitude, crash.Longitude], {
-        radius: 8,
-        fillColor: '#ff4444',
-        color: '#ff4444',
-        weight: 0,
-        opacity: intensity,
-        fillOpacity: intensity
-      });
-      heatmapLayer.addLayer(circle);
-    });
-    
-    heatmapLayer.addTo(map);
-    
-    return () => {
-      map.removeLayer(heatmapLayer);
-    };
-  }, [crashes, map]);
-
-  return null;
 }
 
 export default function CrashMap({ crashes, showHeatmap = false, yearFilter }: CrashMapProps) {
@@ -80,11 +46,21 @@ export default function CrashMap({ crashes, showHeatmap = false, yearFilter }: C
   const centerLon = filteredCrashes.reduce((sum, crash) => sum + crash.Longitude, 0) / filteredCrashes.length;
   const center: LatLngTuple = [centerLat, centerLon];
 
-  const getMarkerColor = (year: number) => {
-    if (year >= 2023) return '#dc2626'; // red
-    if (year >= 2021) return '#ea580c'; // orange
-    if (year >= 2019) return '#eab308'; // yellow
-    return '#16a34a'; // green
+  const getMarkerColor = (injury: string) => {
+    const injuryLower = injury.toLowerCase();
+    if (injuryLower.includes('fatal') || injuryLower.includes('killed')) {
+      return '#dc2626'; // red - fatal
+    }
+    if (injuryLower.includes('major') || injuryLower.includes('incapacitating')) {
+      return '#ea580c'; // orange - major injury
+    }
+    if (injuryLower.includes('minor') || injuryLower.includes('suspected')) {
+      return '#eab308'; // yellow - minor injury
+    }
+    if (injuryLower.includes('no apparent') || injuryLower.includes('none')) {
+      return '#16a34a'; // green - no injury
+    }
+    return '#6b7280'; // gray - unknown
   };
 
   return (
@@ -100,36 +76,51 @@ export default function CrashMap({ crashes, showHeatmap = false, yearFilter }: C
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
-        {showHeatmap && <HeatmapLayer crashes={filteredCrashes} />}
-        
-        {!showHeatmap && filteredCrashes.map((crash, index) => (
-          <CircleMarker
-            key={index}
-            center={[crash.Latitude, crash.Longitude]}
-            radius={5}
-            pathOptions={{
-              color: 'black',
-              fillColor: getMarkerColor(crash.Year),
-              fillOpacity: 0.7,
-              weight: 1
-            }}
-          >
-            <Popup maxWidth={300}>
-              <div className="text-sm">
-                <h3 className="font-bold text-red-600 mb-2">Bicycle Crash</h3>
-                <p><strong>Date:</strong> {new Date(crash['Date Time']).toLocaleDateString()} {new Date(crash['Date Time']).toLocaleTimeString()}</p>
-                <p><strong>Street:</strong> {crash['Street Name Cleaned']}</p>
-                {crash['Cross Street Cleaned'] && (
-                  <p><strong>Cross Street:</strong> {crash['Cross Street Cleaned']}</p>
-                )}
-                <p><strong>Intersection:</strong> {crash['Intersection_ID']}</p>
-                <p><strong>Collision:</strong> {crash['Manner of Collision']}</p>
-                <p><strong>Weather:</strong> {crash['Weather Condition 1']}</p>
-                <p><strong>Injury:</strong> {crash['P1 Injury']}</p>
-              </div>
-            </Popup>
-          </CircleMarker>
-        ))}
+        <LayersControl position="topright">
+          {/* Always show heatmap as base layer */}
+          <LayersControl.Overlay name="Crash Heatmap" checked={true}>
+            <HeatmapLayer 
+              crashes={filteredCrashes} 
+              intensity={0.6}
+              radius={25}
+              blur={15}
+            />
+          </LayersControl.Overlay>
+          
+          {/* Show individual markers as overlay */}
+          <LayersControl.Overlay name="Individual Crashes" checked={true}>
+            <div>
+              {filteredCrashes.map((crash, index) => (
+                <CircleMarker
+                  key={index}
+                  center={[crash.Latitude, crash.Longitude]}
+                  radius={4}
+                  pathOptions={{
+                    color: 'black',
+                    fillColor: getMarkerColor(crash['P1 Injury']),
+                    fillOpacity: 0.8,
+                    weight: 1.5
+                  }}
+                >
+                  <Popup maxWidth={300}>
+                    <div className="text-sm">
+                      <h3 className="font-bold text-red-600 mb-2">Bicycle Crash</h3>
+                      <p><strong>Date:</strong> {new Date(crash['Date Time']).toLocaleDateString()} {new Date(crash['Date Time']).toLocaleTimeString()}</p>
+                      <p><strong>Street:</strong> {crash['Street Name Cleaned']}</p>
+                      {crash['Cross Street Cleaned'] && (
+                        <p><strong>Cross Street:</strong> {crash['Cross Street Cleaned']}</p>
+                      )}
+                      <p><strong>Intersection:</strong> {crash['Intersection_ID']}</p>
+                      <p><strong>Collision:</strong> {crash['Manner of Collision']}</p>
+                      <p><strong>Weather:</strong> {crash['Weather Condition 1']}</p>
+                      <p><strong>Injury:</strong> {crash['P1 Injury']}</p>
+                    </div>
+                  </Popup>
+                </CircleMarker>
+              ))}
+            </div>
+          </LayersControl.Overlay>
+        </LayersControl>
       </MapContainer>
     </div>
   );
