@@ -1,17 +1,10 @@
 import { NextResponse } from 'next/server';
-import { BicycleCrash, CrashStats } from '../../../types/crashes';
-
-async function getCrashData(): Promise<BicycleCrash[]> {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/crashes`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch crash data');
-  }
-  return response.json();
-}
+import { CrashStats } from '../../../types/crashes';
+import { loadCrashData } from '../../../lib/crashData';
 
 export async function GET() {
   try {
-    const data = await getCrashData();
+    const data = await loadCrashData();
     
     // Calculate yearly stats
     const yearly: { [year: string]: number } = {};
