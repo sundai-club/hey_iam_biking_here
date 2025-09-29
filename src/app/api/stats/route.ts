@@ -31,7 +31,6 @@ export async function GET() {
 
     // Calculate daily stats
     const daily: { [day: string]: number } = {};
-    const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     data.forEach(crash => {
       const day = crash['Day of Week'];
       daily[day] = (daily[day] || 0) + 1;

@@ -8,7 +8,7 @@ import L from 'leaflet';
 // Import leaflet.heat
 import 'leaflet.heat';
 
-let heatLayer: any = null;
+let heatLayer: L.Layer | null = null;
 
 interface HeatmapLayerProps {
   crashes: BicycleCrash[];
@@ -44,7 +44,7 @@ export default function HeatmapLayer({
       ]);
 
       // Create heatmap layer using the imported plugin
-      heatLayer = (L as any).heatLayer(heatData, {
+      heatLayer = ((L as unknown as Record<string, unknown>).heatLayer as (data: number[][], options: Record<string, unknown>) => L.Layer)(heatData, {
         radius: radius,
         blur: blur,
         maxZoom: maxZoom,
@@ -76,7 +76,7 @@ export default function HeatmapLayer({
           opacity: 0.3,
           fillOpacity: 0.3
         });
-        fallbackLayer.addLayer(circle);
+        fallbackLayer.addLayer(circle as unknown as L.Layer);
       });
       
       fallbackLayer.addTo(map);

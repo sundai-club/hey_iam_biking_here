@@ -7,7 +7,7 @@ interface StatsChartsProps {
   stats: CrashStats;
 }
 
-const COLORS = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+// const COLORS = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
 
 export default function StatsCharts({ stats }: StatsChartsProps) {
   // Prepare data for charts
@@ -157,7 +157,6 @@ export default function StatsCharts({ stats }: StatsChartsProps) {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"

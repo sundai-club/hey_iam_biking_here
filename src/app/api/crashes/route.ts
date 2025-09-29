@@ -20,12 +20,12 @@ function loadCrashData(): BicycleCrash[] {
       skipEmptyLines: true,
       transform: (value, field) => {
         // Transform numeric fields
-        if (['Latitude', 'Longitude', 'P1 Age', 'P2 Age', 'Year', 'Month', 'Day', 'Hour', 'Day_of_Week_Num', 'May involve cyclist', 'May Involve Pedestrian'].includes(field)) {
+        if (['Latitude', 'Longitude', 'P1 Age', 'P2 Age', 'Year', 'Month', 'Day', 'Hour', 'Day_of_Week_Num', 'May involve cyclist', 'May Involve Pedestrian'].includes(String(field))) {
           const num = parseFloat(value);
           return isNaN(num) ? value : num;
         }
         // Transform boolean fields
-        if (['Is_Weekend', 'Is_Rush_Hour'].includes(field)) {
+        if (['Is_Weekend', 'Is_Rush_Hour'].includes(String(field))) {
           return value === 'True';
         }
         return value;
