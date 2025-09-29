@@ -14,14 +14,14 @@ export async function loadCrashData(): Promise<BicycleCrash[]> {
     const csvPath = path.join(process.cwd(), 'public', 'data', 'bicycle_crashes_cleaned.csv');
     const csvContent = await fs.promises.readFile(csvPath, 'utf-8');
     
-    const result = Papa.parse<any>(csvContent, {
+    const result = Papa.parse<Record<string, string>>(csvContent, {
       header: true,
       skipEmptyLines: true,
       dynamicTyping: false
     });
 
     // Transform the data to match the BicycleCrash interface
-    crashData = result.data.map((row: any): BicycleCrash => ({
+    crashData = result.data.map((row: Record<string, string>): BicycleCrash => ({
       'Date Time': String(row['Date Time'] || ''),
       'Day of Week': String(row['Day of Week'] || ''),
       'Street Name Cleaned': String(row['Street Name Cleaned'] || ''),
